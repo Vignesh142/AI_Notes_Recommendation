@@ -42,7 +42,7 @@ Your response should only contain the formatted notes content, without any intro
                 { role: "user", content: prompt }
             ],
             model: "llama-3.3-70b-versatile",
-            temperature: 0.3,
+            // temperature: 0.3,
         });
         return completion.choices[0].message.content;
     }
