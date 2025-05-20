@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Notes Generator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .container {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        input[type="file"] {
+            padding: 10px 0;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            display: block;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        .results {
+            margin-top: 30px;
+            display: none;
+        }
+        
+        .results h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .file-link {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #3498db;
+            transition: background-color 0.3s;
+        }
+        
+        .file-link:hover {
+            background-color: #e9ecef;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #3498db;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            background-color: #fadbd8;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI Notes Generator</h1>
+        
+        <form id="notesForm">
+            <div class="form-group">
+                <label for="courseTitle">Course Title</label>
+                <input type="text" id="courseTitle" name="courseTitle" placeholder="Introduction to Computer Science" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="professorName">Professor Name</label>
+                <input type="text" id="professorName" name="professorName" placeholder="Dr. Jane Smith" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="institution">Institution</label>
+                <input type="text" id="institution" name="institution" placeholder="University of Technology" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="file">Upload Syllabus (PDF or TXT)</label>
+                <input type="file" id="file" name="file" accept=".pdf,.txt" required>
+            </div>
+            
+            <button type="submit">Generate Notes</button>
+        </form>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Generating your notes... This may take a few minutes.</p>
+        </div>
+        
+        <div class="error-message" id="errorMessage"></div>
+        
+        <div class="results" id="results">
+            <h2>Your Notes are Ready!</h2>
+            <div id="fileLinks"></div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('notesForm');
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+            const fileLinks = document.getElementById('fileLinks');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Hide any previous results or errors
+                results.style.display = 'none';
+                errorMessage.style.display = 'none';
+                fileLinks.innerHTML = '';
+                
+                // Show loading spinner
+                loading.style.display = 'block';
+                
+                const formData = new FormData(form);
+                
+                try {
+                    const response = await fetch('/api/generate-notes', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (!response.ok) {
+                        throw new Error(data.message || 'Failed to generate notes');
+                    }
+                    
+                    // Hide loading spinner
+                    loading.style.display = 'none';
+                    
+                    // Display the results
+                    results.style.display = 'block';
+                    
+                    // Create links for each file
+                    data.files.forEach(file => {
+                        const link = document.createElement('a');
+                        link.href = file.url;
+                        link.className = 'file-link';
+                        link.download = file.filename;
+                        link.innerHTML = `Download ${file.filename}`;
+                        fileLinks.appendChild(link);
+                    });
+                } catch (error) {
+                    // Hide loading spinner
+                    loading.style.display = 'none';
+                    
+                    // Show error message
+                    errorMessage.textContent = error.message || 'An error occurred while generating notes';
+                    errorMessage.style.display = 'block';
+                    console.error('Error:', error);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

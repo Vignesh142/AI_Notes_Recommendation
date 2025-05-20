@@ -1,0 +1,41 @@
+
+
+Code No.: U21PE741CS
+R2
+MATURI VENKATA SUBBA RAO (MVSR) ENGINEERING COLLEGE
+ 
+Software Quality & Testing
+UNIT-III,IV and V
+Define Software Quality and Software Quality Control
+Describe the Concept of Software Configuration  Management.
+What is template.
+Explain the Components of software quality assurance system.
+Asses the key Contributions of template in Software Quality.
+Outline the activities of Spiral Model  in the Project Life Cycle.
+******
+Enumerate the causes of errors in software development .
+Compose Short notes on Verification-Validation  and Qualification.
+Describe CASE tool.
+Explain about the various Software Quality Factors. 
+Justify the Contribution  of Check List in Software Quality. 
+Discuss about the components of Project Progress Control.
+UNIT-I,II
+1, Define a. software b. software Quality c. software quality assurance d)software quality control
+2. list the causes of errors.
+3. what is error-fault and failure.
+4. objectives of software quality Assurance.
+5, what is validation-verification and qualification.
+6. what is template and check list.
+7. what is CASE tool.
+8. what is software configuration management and software change management.
+9. explain the components of software quality assurance system.
+10. what are the software quality factors.
+11. explain waterfall model and spiral model.
+12. what is the contribution of template in software quality.
+13, what is the contribution of check list in software quality.
+
+Code No.: U21PE741CS
+R2
+14. explain the components of project progress control.
+15. what is the contribution of CASE tool to Quality.
+16. Describe the common types of software configuration items.
