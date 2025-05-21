@@ -1,0 +1,73 @@
+Computer Science & Engineering –R22
+Operating Systems (D55PC13)
+B.Tech V Semester LTPC
+ 3003
+Course Objective
+ To understand the basic components of a computer operating system, scheduling
+polices, process synchronization, deadlocks, memory management strategies and
+file system implementation.
+Course Outcomes
+After completion of the course the student will be able to,
+1. Identify the components, structure, OS services and analyze the role of an Operating
+System in developing software applications. L3
+2. Make use of the concepts of CPU scheduling, including scheduling criteria and inter
+process communication, and apply them to solve scheduling problems. L3
+3. Apply synchronization techniques to coordinate access to shared resources among
+concurrent processes and various mechanisms to detect and recovery the deadlocks.
+L3
+4. Analyze memory management and virtual memory management strategies and their
+significance in modern computing environments. L4
+5. Make use of the structure of file system and principles of protection to develop
+secure, efficient and reliable computing environments. L3.
+UNIT – I
+Overview Introduction-Operating system objectives, User view, System view, Operating
+system definition, Computer System Architecture, OS Structure, OS Operations, Process
+Management, Memory Management, Storage Management, Protection and Security,
+Computing Environments. Operating System services, User and OS Interface, System Calls,
+Types of System Calls, System Programs, Operating System Design and Implementation, OS
+Structure.
+UNIT – II
+CPU Scheduling Process concepts-The Process, Process State, Process Control Block,
+Threads, Process Scheduling, Scheduling Queues, Schedulers, Context Switch, Operations on
+Processes, System calls fork(),exec(),wait(),exit(), Inter-process communication-ordinary
+pipes and named pipes, message queues, shared memory in Unix.
+Process Scheduling-Basic concepts, Scheduling Criteria, Scheduling algorithms, MultipleProcessor Scheduling, Real Time Scheduling, Thread scheduling, Linux scheduling and
+Windows scheduling.
+CSE R22
+
+UNIT – III
+Process Synchronization, Background, The Critical Section Problem, Peterson’s solution,
+Synchronization Hardware, Semaphores, Classic Problems of Synchronization, Monitors,
+Synchronization in Linux and Windows.
+Deadlocks-System Model, Deadlock Characterization, Methods for Handling Deadlocks,
+Deadlock Prevention, Deadlock Avoidance, Deadlock Detection, and Recovery from
+Deadlock.
+UNIT – IV
+Memory Management Background, Swapping, Contiguous Memory Allocation,
+Segmentation, Paging, Structure of Page Table.
+Virtual Memory Management Background, Demand Paging, Copy-on-Write, Page
+Replacement, Page Replacement Algorithms, Allocation of Frames, Thrashing, Virtual
+memory in Windows.
+UNIT – V
+Storage Management File System- Concept of a File, System calls for file operations –
+open (), read (), write (), close (), seek (), unlink (), Access methods, Directory and Disk
+Structure, File System Mounting, File Sharing.
+File System Implementation File System Structure, File System Implementation, Directory
+Implementation, Allocation methods, Free-space Management, Efficiency, and Performance,
+Overview of Mass Storage Structure.
+Protection System Protection, Goals of Protection, Principles of Protection, Domain of
+Protection, Access Matrix, Implementation of Access Matrix, Access Control, Revocation of
+Access Rights, Capability-Based Systems, Language-Based Protection.
+Text Books
+1. Operating System Concepts, Abraham Silberschatz, Peter B. Galvin, Greg Gagne,
+ 8
+th Edition, Wiley, 2016 India Edition.
+2. Operating Systems – Internals and Design Principles, W. Stallings, 7th Edition,
+ Pearson.
+Reference Books
+1. Modern Operating Systems, Andrew S Tanenbaum, 3rd Edition, PHI
+2. Operating Systems A concept-based Approach, 2nd Edition, D.M. Dhamdhere,
+3. Principles of Operating Systems, B. L. Stuart, Cengage learning, India Edition,
+ TMH.
+4. An Introduction to Operating Systems, P.C.P. Bhatt, PHI.
+5. Principles of Operating systems, Naresh Chauhan, Oxford University Press.

@@ -1,26 +1,59 @@
 // File: src/aiProcessor.ts
 import { Groq } from 'groq-sdk';
-import { getSysPrompt } from './sysPrompt.js';
-export async function processContentWithGroq(content, metadata) {
+import { getRoadmapPrompt } from './sysPrompt.js';
+import { getNotesPrompt } from './sysPrompt.js';
+const groq = new Groq({
+    // apiKey: process.env.GROQ_API_KEY
+    apiKey: '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'
+});
+// ✅ Generic AI Completion Function
+export async function askGroq(prompt) {
     try {
-        // Initialize Groq client
-        const groq = new Groq({
-            apiKey: process.env.GROQ_API_KEY
-        });
-        const sysPrompt = getSysPrompt(metadata, content);
-        const prompt = sysPrompt;
-        // Call the Groq API
         const completion = await groq.chat.completions.create({
-            messages: [
-                { role: "user", content: prompt }
-            ],
+            messages: [{ role: "user", content: prompt }],
             model: "llama-3.3-70b-versatile",
             // temperature: 0.3,
         });
-        return completion.choices[0].message.content;
+        return completion.choices[0].message.content || '';
     }
     catch (error) {
-        console.error('Error processing content with AI:', error);
+        console.error('Error calling Groq AI:', error);
         throw error;
     }
+}
+export async function getRoadmap(content, metadata) {
+    try {
+        const type = 'syllabus';
+        const sysPrompt = getRoadmapPrompt(content, type);
+        return await askGroq(sysPrompt);
+    }
+    catch (error) {
+        console.error('Error processing content with AI (Roadmap):', error);
+        throw error;
+    }
+}
+export async function generateNotesForPhase(phase) {
+    // console.log("Current: \n\n" + phase)
+    const phaseObj = JSON.parse(phase);
+    console.log(phaseObj.title);
+    console.log(phaseObj.description);
+    const systemPrompt = getNotesPrompt();
+    const subPhases = phaseObj?.subPhases;
+    if (!subPhases || typeof subPhases !== 'object') {
+        throw new Error('Invalid or missing subPhases');
+    }
+    const userPrompt = `
+    Phase: ${phaseObj?.title}
+    Description: ${phaseObj?.description}
+
+    SubPhases:
+    ${Object.values(subPhases)
+        .map((sub) => `- ${sub?.title}: ${sub?.description}`)
+        .join("\n")}
+    `;
+    const response = await askGroq(systemPrompt + '\n\n' + userPrompt);
+    let filteredResponseStr = response.replace(/^```[a-z]*\n?/i, "").replace(/```$/, "").trim();
+    console.log(filteredResponseStr);
+    return response;
+    // return 'hi';
 }
