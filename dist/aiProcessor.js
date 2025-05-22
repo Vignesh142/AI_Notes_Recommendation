@@ -32,28 +32,39 @@ export async function getRoadmap(content, metadata) {
         throw error;
     }
 }
-export async function generateNotesForPhase(phase) {
-    // console.log("Current: \n\n" + phase)
-    const phaseObj = JSON.parse(phase);
-    console.log(phaseObj.title);
-    console.log(phaseObj.description);
+export async function generateNotesForPhase(phaseStr) {
+    const phaseObj = JSON.parse(phaseStr);
+    console.log(`\n📘 Generating notes for phase: ${phaseObj.title}\n`);
     const systemPrompt = getNotesPrompt();
     const subPhases = phaseObj?.subPhases;
     if (!subPhases || typeof subPhases !== 'object') {
         throw new Error('Invalid or missing subPhases');
     }
-    const userPrompt = `
-    Phase: ${phaseObj?.title}
-    Description: ${phaseObj?.description}
-
-    SubPhases:
-    ${Object.values(subPhases)
-        .map((sub) => `- ${sub?.title}: ${sub?.description}`)
-        .join("\n")}
+    const subNotes = [];
+    for (const sub of Object.values(subPhases)) {
+        const userPrompt = `
+Phase: ${phaseObj?.title}
+SubPhase: ${sub?.title}
+Description: ${sub?.description}
     `;
-    const response = await askGroq(systemPrompt + '\n\n' + userPrompt);
-    let filteredResponseStr = response.replace(/^```[a-z]*\n?/i, "").replace(/```$/, "").trim();
-    console.log(filteredResponseStr);
-    return response;
-    // return 'hi';
+        try {
+            const response = await askGroq(systemPrompt + '\n\n' + userPrompt);
+            const filteredResponseStr = response
+                .replace(/^```[a-z]*\n?/i, "")
+                .replace(/```$/, "")
+                .trim();
+            subNotes.push({
+                subPhaseTitle: sub.title,
+                notes: filteredResponseStr,
+            });
+        }
+        catch (error) {
+            console.error(`❌ Failed to generate notes for subPhase "${sub?.title}":`, error);
+        }
+    }
+    return {
+        phaseTitle: phaseObj.title,
+        phaseDescription: phaseObj.description,
+        notes: subNotes,
+    };
 }

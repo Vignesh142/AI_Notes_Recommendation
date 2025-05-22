@@ -43,35 +43,45 @@ export async function getRoadmap(
 }
 
 
-export async function generateNotesForPhase(phase: string) {
-    // console.log("Current: \n\n" + phase)
-    const phaseObj = JSON.parse(phase) as Phase;
-    console.log(phaseObj.title);
-    console.log(phaseObj.description);
+export async function generateNotesForPhase(phaseStr: string) {
+  const phaseObj = JSON.parse(phaseStr) as Phase;
+  console.log(`\n📘 Generating notes for phase: ${phaseObj.title}\n`);
 
-    const systemPrompt = getNotesPrompt();
+  const systemPrompt = getNotesPrompt();
 
-    const subPhases = phaseObj?.subPhases;
-    if (!subPhases || typeof subPhases !== 'object') {
-      throw new Error('Invalid or missing subPhases');
-    }
+  const subPhases = phaseObj?.subPhases;
+  if (!subPhases || typeof subPhases !== 'object') {
+    throw new Error('Invalid or missing subPhases');
+  }
 
+  const subNotes = [];
+
+  for (const sub of Object.values(subPhases)) {
     const userPrompt = `
-    Phase: ${phaseObj?.title}
-    Description: ${phaseObj?.description}
-
-    SubPhases:
-    ${Object.values(subPhases)
-      .map((sub) => `- ${sub?.title}: ${sub?.description}`)
-      .join("\n")}
+Phase: ${phaseObj?.title}
+SubPhase: ${sub?.title}
+Description: ${sub?.description}
     `;
 
-    const response = await askGroq(systemPrompt + '\n\n' + userPrompt);
+    try {
+      const response = await askGroq(systemPrompt + '\n\n' + userPrompt);
+      const filteredResponseStr = response
+        .replace(/^```[a-z]*\n?/i, "")
+        .replace(/```$/, "")
+        .trim();
 
-    let filteredResponseStr = response.replace(/^```[a-z]*\n?/i, "").replace(/```$/, "").trim();
+      subNotes.push({
+        subPhaseTitle: sub.title,
+        notes: filteredResponseStr,
+      });
+    } catch (error) {
+      console.error(`❌ Failed to generate notes for subPhase "${sub?.title}":`, error);
+    }
+  }
 
-    console.log(filteredResponseStr)
-    
-    return response;
-    // return 'hi';
+  return {
+    phaseTitle: phaseObj.title,
+    phaseDescription: phaseObj.description,
+    notes: subNotes,
+  };
 }

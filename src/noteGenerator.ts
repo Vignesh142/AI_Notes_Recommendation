@@ -31,6 +31,16 @@ export interface Phase {
 
 type RoadmapJSON = Record<string, Phase>;
 
+function toMarkdown(allNotes: any[]) {
+  return allNotes.map(note => {
+    const subNotesMarkdown = note.notes.map(
+      (sub: any) => `### ${sub.subPhaseTitle}\n${sub.notes}`
+    ).join('\n\n');
+
+    return `# ${note.title}\n\n${note.description}\n\n${subNotesMarkdown}`;
+  }).join('\n\n---\n\n');
+}
+
 export async function generateNotes(
   filePath: string,
   metadata: NoteMetadata
@@ -52,7 +62,7 @@ export async function generateNotes(
     const filteredRoadmap: RoadmapJSON = JSON.parse(rawRoadmapStr);
     // console.log('Filtered Roadmap:', filteredRoadmap);
 
-    // Grab the inner object containing phase1, phase2, etc.
+    
     const roadmapObj = filteredRoadmap.roadmapjson;
     const phaseEntries = Object.entries(roadmapObj);
 
@@ -61,25 +71,27 @@ export async function generateNotes(
     const allNotes = [];
 
     for (const [key, phase] of phaseEntries) {
-      try {
-        console.log("Generating notes for:", key);
-        
-        const res = await generateNotesForPhase(JSON.stringify(phase));
+      const subPhaseEntries = Object.entries(phase);
+      for (const [subKey, subPhaseObj] of subPhaseEntries) {
+        try {
+          console.log(`Generating notes for: ${subKey}`);
+          const phaseString = JSON.stringify(subPhaseObj);
+          const data = await generateNotesForPhase(phaseString);
 
-        allNotes.push({
-          phaseKey: key,
-          title: phase.title,
-          notes: res,
-        });
-      } catch (err) {
-        console.error(`❌ Error generating notes for phase "${key}":`, err);
+          allNotes.push({
+            phaseKey: subKey,
+            title: data.phaseTitle,
+            description: data.phaseDescription,
+            notes: data.notes,
+          });
+        } catch (err) {
+          console.error(`❌ Error generating notes for phase "${subKey}":`, err);
+        }
       }
     }
 
 
-    const finalNotesMarkdown = allNotes
-      .map(({ title, notes }) => `## ${title}\n\n${notes}`)
-      .join("\n\n");
+    const finalNotesMarkdown = toMarkdown(allNotes);
   
     const outputPath = './notes.md'; // testing how many lines it spits out
 
