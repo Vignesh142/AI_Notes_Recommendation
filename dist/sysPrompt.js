@@ -84,6 +84,8 @@ export const getNotesPrompt = () => {
     - Bold key terms and important concepts
 
     Your response should only contain the formatted notes content, without any introductory or concluding remarks.
+
+    MAKE SURE EVERYTHING IS TO MAX OF YOUR TOKEN LENGTH COVERING EVERY TOPIC OF THE CONTENT
     `;
     return prompt;
 };

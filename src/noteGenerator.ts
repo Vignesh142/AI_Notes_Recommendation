@@ -92,17 +92,17 @@ export async function generateNotes(
 
     // Generate output files
     console.log('Generating documents...');
-    // const timestamp = Date.now();
-    // const baseFilename = `${metadata.courseTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_notes_${timestamp}`;
+    const timestamp = Date.now();
+    const baseFilename = `${metadata.courseTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_notes_${timestamp}`;
     
-    // const docxPath = path.join(outputDir, `${baseFilename}.docx`);
-    // const pdfPath = path.join(outputDir, `${baseFilename}.pdf`);
+    const docxPath = path.join(outputDir, `${baseFilename}.docx`);
+    const pdfPath = path.join(outputDir, `${baseFilename}.pdf`);
     
-    // await generateDocx(processedContent, metadata, docxPath);
-    // await generatePdf(processedContent, metadata, pdfPath);
+    await generateDocx(finalNotesMarkdown, metadata, docxPath);
+    await generatePdf(finalNotesMarkdown, metadata, pdfPath);
     
-    // return [docxPath, pdfPath];
-    return ['hi', 'bro'];
+    return [docxPath, pdfPath];
+    // return ['hi', 'bro'];
   } catch (error) {
     console.error('Error in generateNotes:', error);
     throw error;

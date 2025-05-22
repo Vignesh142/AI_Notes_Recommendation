@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { extractTextFromFile } from './textExtractor.js';
 import { getRoadmap, generateNotesForPhase } from './aiProcessor.js';
+import { generateDocx, generatePdf } from './documentGenerator.js';
 // Get the directory name
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -44,7 +45,7 @@ export async function generateNotes(filePath, metadata) {
         const finalNotesMarkdown = allNotes
             .map(({ title, notes }) => `## ${title}\n\n${notes}`)
             .join("\n\n");
-        const outputPath = './notes.md'; // or any path you want
+        const outputPath = './notes.md'; // testing how many lines it spits out
         try {
             await fs.writeFile(outputPath, finalNotesMarkdown, 'utf-8');
             console.log(`✅ Notes written successfully to: ${outputPath}`);
@@ -54,14 +55,14 @@ export async function generateNotes(filePath, metadata) {
         }
         // Generate output files
         console.log('Generating documents...');
-        // const timestamp = Date.now();
-        // const baseFilename = `${metadata.courseTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_notes_${timestamp}`;
-        // const docxPath = path.join(outputDir, `${baseFilename}.docx`);
-        // const pdfPath = path.join(outputDir, `${baseFilename}.pdf`);
-        // await generateDocx(processedContent, metadata, docxPath);
-        // await generatePdf(processedContent, metadata, pdfPath);
-        // return [docxPath, pdfPath];
-        return ['hi', 'bro'];
+        const timestamp = Date.now();
+        const baseFilename = `${metadata.courseTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_notes_${timestamp}`;
+        const docxPath = path.join(outputDir, `${baseFilename}.docx`);
+        const pdfPath = path.join(outputDir, `${baseFilename}.pdf`);
+        await generateDocx(finalNotesMarkdown, metadata, docxPath);
+        await generatePdf(finalNotesMarkdown, metadata, pdfPath);
+        return [docxPath, pdfPath];
+        // return ['hi', 'bro'];
     }
     catch (error) {
         console.error('Error in generateNotes:', error);
