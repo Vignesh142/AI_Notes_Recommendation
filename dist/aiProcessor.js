@@ -37,34 +37,40 @@ export async function generateNotesForPhase(phaseStr) {
     console.log(`\n📘 Generating notes for phase: ${phaseObj.title}\n`);
     const systemPrompt = getNotesPrompt();
     const subPhases = phaseObj?.subPhases;
-    if (!subPhases || typeof subPhases !== 'object') {
-        throw new Error('Invalid or missing subPhases');
-    }
-    const subNotes = [];
-    for (const sub of Object.values(subPhases)) {
-        const userPrompt = `
-Phase: ${phaseObj?.title}
-SubPhase: ${sub?.title}
-Description: ${sub?.description}
-    `;
-        try {
-            const response = await askGroq(systemPrompt + '\n\n' + userPrompt);
-            const filteredResponseStr = response
-                .replace(/^```[a-z]*\n?/i, "")
-                .replace(/```$/, "")
-                .trim();
-            subNotes.push({
-                subPhaseTitle: sub.title,
-                notes: filteredResponseStr,
-            });
+    if (subPhases && typeof subPhases === 'object') {
+        const subNotes = [];
+        for (const sub of Object.values(subPhases)) {
+            const userPrompt = `
+You are generating notes for a sub-topic of a phase.
+
+SubPhase Title: ${sub?.title}
+SubPhase Description: ${sub?.description}
+Generate clear and comprehensive notes for this sub-topic.
+`;
+            try {
+                const response = await askGroq(systemPrompt + '\n\n' + userPrompt);
+                const filteredResponseStr = response
+                    .replace(/^```[a-z]*\n?/i, "")
+                    .replace(/```$/, "")
+                    .trim();
+                subNotes.push({
+                    subPhaseTitle: sub.title,
+                    notes: filteredResponseStr,
+                });
+            }
+            catch (error) {
+                console.error(`❌ Failed to generate notes for subPhase "${sub?.title}":`, error);
+            }
         }
-        catch (error) {
-            console.error(`❌ Failed to generate notes for subPhase "${sub?.title}":`, error);
-        }
+        return {
+            phaseTitle: phaseObj.title,
+            phaseDescription: phaseObj.description,
+            notes: subNotes,
+        };
     }
     return {
         phaseTitle: phaseObj.title,
         phaseDescription: phaseObj.description,
-        notes: subNotes,
+        notes: [],
     };
 }

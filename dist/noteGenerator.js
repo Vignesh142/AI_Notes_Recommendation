@@ -9,6 +9,12 @@ import { generateDocx, generatePdf } from './documentGenerator.js';
 // Get the directory name
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+function toMarkdown(allNotes) {
+    return allNotes.map(note => {
+        const subNotesMarkdown = note.notes.map((sub) => `### ${sub.subPhaseTitle}\n${sub.notes}`).join('\n\n');
+        return `# ${note.title}\n\n${note.description}\n\n${subNotesMarkdown}`;
+    }).join('\n\n---\n\n');
+}
 export async function generateNotes(filePath, metadata) {
     try {
         // Create outputs directory if it doesn't exist
@@ -22,29 +28,28 @@ export async function generateNotes(filePath, metadata) {
         const rawRoadmap = await getRoadmap(extractedText, metadata);
         const rawRoadmapStr = rawRoadmap.replace(/^```[a-z]*\n?/i, "").replace(/```$/, "").trim();
         const filteredRoadmap = JSON.parse(rawRoadmapStr);
-        // console.log('Filtered Roadmap:', filteredRoadmap);
-        // Grab the inner object containing phase1, phase2, etc.
+        console.log('Filtered Roadmap:', filteredRoadmap);
         const roadmapObj = filteredRoadmap.roadmapjson;
         const phaseEntries = Object.entries(roadmapObj);
         // console.log('Phase Entries:', phaseEntries);
         const allNotes = [];
-        for (const [key, phase] of phaseEntries) {
+        for (const [phaseKey, phase] of phaseEntries) {
             try {
-                console.log("Generating notes for:", key);
-                const res = await generateNotesForPhase(JSON.stringify(phase));
+                console.log(`📘 Generating notes for phase: ${phase.title}`);
+                const phaseString = JSON.stringify(phase);
+                const data = await generateNotesForPhase(phaseString);
                 allNotes.push({
-                    phaseKey: key,
-                    title: phase.title,
-                    notes: res,
+                    phaseKey,
+                    title: data.phaseTitle,
+                    description: data.phaseDescription,
+                    notes: data.notes,
                 });
             }
             catch (err) {
-                console.error(`❌ Error generating notes for phase "${key}":`, err);
+                console.error(`❌ Error generating notes for phase "${phaseKey}":`, err);
             }
         }
-        const finalNotesMarkdown = allNotes
-            .map(({ title, notes }) => `## ${title}\n\n${notes}`)
-            .join("\n\n");
+        const finalNotesMarkdown = toMarkdown(allNotes);
         const outputPath = './notes.md'; // testing how many lines it spits out
         try {
             await fs.writeFile(outputPath, finalNotesMarkdown, 'utf-8');

@@ -60,7 +60,7 @@ export async function generateNotes(
 
     const rawRoadmapStr = rawRoadmap.replace(/^```[a-z]*\n?/i, "").replace(/```$/, "").trim();
     const filteredRoadmap: RoadmapJSON = JSON.parse(rawRoadmapStr);
-    // console.log('Filtered Roadmap:', filteredRoadmap);
+    console.log('Filtered Roadmap:', filteredRoadmap);
 
     
     const roadmapObj = filteredRoadmap.roadmapjson;
@@ -70,25 +70,24 @@ export async function generateNotes(
 
     const allNotes = [];
 
-    for (const [key, phase] of phaseEntries) {
-      const subPhaseEntries = Object.entries(phase);
-      for (const [subKey, subPhaseObj] of subPhaseEntries) {
-        try {
-          console.log(`Generating notes for: ${subKey}`);
-          const phaseString = JSON.stringify(subPhaseObj);
-          const data = await generateNotesForPhase(phaseString);
+    for (const [phaseKey, phase] of phaseEntries) {
+      try {
+        console.log(`📘 Generating notes for phase: ${phase.title}`);
+        
+        const phaseString = JSON.stringify(phase);
+        const data = await generateNotesForPhase(phaseString);
 
-          allNotes.push({
-            phaseKey: subKey,
-            title: data.phaseTitle,
-            description: data.phaseDescription,
-            notes: data.notes,
-          });
-        } catch (err) {
-          console.error(`❌ Error generating notes for phase "${subKey}":`, err);
-        }
+        allNotes.push({
+          phaseKey,
+          title: data.phaseTitle,
+          description: data.phaseDescription,
+          notes: data.notes,
+        });
+      } catch (err) {
+        console.error(`❌ Error generating notes for phase "${phaseKey}":`, err);
       }
     }
+
 
 
     const finalNotesMarkdown = toMarkdown(allNotes);
