@@ -23,7 +23,7 @@ export async function generateNotes(filePath, metadata) {
         // Extract text from the file
         console.log('Extracting text from file...');
         const extractedText = await extractTextFromFile(filePath);
-        // Process the content with Groq AI
+        // Process the content with Gemini AI
         console.log('Generating Roadmap with AI...');
         const rawRoadmap = await getRoadmap(extractedText, metadata);
         const rawRoadmapStr = rawRoadmap.replace(/^```[a-z]*\n?/i, "").replace(/```$/, "").trim();

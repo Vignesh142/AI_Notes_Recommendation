@@ -1,23 +1,26 @@
-// File: src/aiProcessor.ts
-import { Groq } from 'groq-sdk';
 import { getRoadmapPrompt } from './sysPrompt.js';
 import { getNotesPrompt } from './sysPrompt.js';
-const groq = new Groq({
-    // apiKey: process.env.GROQ_API_KEY
-    apiKey: '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'
-});
-// ✅ Generic AI Completion Function
-export async function askGroq(prompt) {
+import { GoogleGenerativeAI } from "@google/generative-ai";
+const genAI = new GoogleGenerativeAI("AIzaSyCwK-lRm-iYFCNufCSSAypLbKegNtauTKY");
+// ✅ Gemini AI Completion Function
+export async function askGemini(Prompt) {
     try {
-        const completion = await groq.chat.completions.create({
-            messages: [{ role: "user", content: prompt }],
-            model: "llama-3.3-70b-versatile",
-            // temperature: 0.3,
+        const model = genAI.getGenerativeModel({
+            model: "gemini-2.0-flash",
         });
-        return completion.choices[0].message.content || '';
+        const chatSession = model.startChat({
+            generationConfig: {
+                temperature: 1,
+                topP: 0.95,
+                topK: 64,
+            },
+        });
+        const result = await chatSession.sendMessage(Prompt);
+        const rawText = result.response.text();
+        return rawText;
     }
     catch (error) {
-        console.error('Error calling Groq AI:', error);
+        console.error("Error calling Gemini AI:", error);
         throw error;
     }
 }
@@ -25,7 +28,7 @@ export async function getRoadmap(content, metadata) {
     try {
         const type = 'syllabus';
         const sysPrompt = getRoadmapPrompt(content, type);
-        return await askGroq(sysPrompt);
+        return await askGemini(sysPrompt);
     }
     catch (error) {
         console.error('Error processing content with AI (Roadmap):', error);
@@ -48,11 +51,12 @@ SubPhase Description: ${sub?.description}
 Generate clear and comprehensive notes for this sub-topic.
 `;
             try {
-                const response = await askGroq(systemPrompt + '\n\n' + userPrompt);
+                const response = await askGemini(systemPrompt + '\n\n' + userPrompt);
                 const filteredResponseStr = response
                     .replace(/^```[a-z]*\n?/i, "")
                     .replace(/```$/, "")
                     .trim();
+                console.log("Title: " + sub.title + " Response: " + filteredResponseStr);
                 subNotes.push({
                     subPhaseTitle: sub.title,
                     notes: filteredResponseStr,

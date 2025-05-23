@@ -6,7 +6,6 @@ import { dirname } from 'path';
 import { extractTextFromFile } from './textExtractor.js';
 import { getRoadmap, generateNotesForPhase } from './aiProcessor.js';
 import { generateDocx, generatePdf } from './documentGenerator.js';
-import { askGroq } from './aiProcessor.js';
 
 // Get the directory name
 const __filename = fileURLToPath(import.meta.url);
@@ -54,7 +53,7 @@ export async function generateNotes(
     console.log('Extracting text from file...');
     const extractedText = await extractTextFromFile(filePath);
 
-    // Process the content with Groq AI
+    // Process the content with Gemini AI
     console.log('Generating Roadmap with AI...');
     const rawRoadmap = await getRoadmap(extractedText, metadata);
 
