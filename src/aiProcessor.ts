@@ -1,60 +1,104 @@
 // File: src/aiProcessor.ts
-import { Groq } from 'groq-sdk';
+// import { Groq } from 'groq-sdk';
 import { NoteMetadata } from './noteGenerator.js';
+import { getRoadmapPrompt } from './sysPrompt.js';
+import { Phase, SubPhase } from './noteGenerator.js';
+import { getNotesPrompt } from './sysPrompt.js';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-export async function processContentWithGroq(
+const genAI = new GoogleGenerativeAI("AIzaSyCwK-lRm-iYFCNufCSSAypLbKegNtauTKY");
+
+// ✅ Gemini AI Completion Function
+export async function askGemini(Prompt: string): Promise<string> {
+  try {
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.0-flash",
+    });
+
+    const chatSession = model.startChat({
+      generationConfig: {
+        temperature: 1,
+        topP: 0.95,
+        topK: 64,
+      },
+    });
+
+    const result = await chatSession.sendMessage(Prompt);
+    const rawText = result.response.text();
+
+    return rawText;
+  } catch (error) {
+    console.error("Error calling Gemini AI:", error);
+    throw error;
+  }
+}
+
+
+
+export async function getRoadmap(
   content: string,
   metadata: NoteMetadata
 ): Promise<string> {
   try {
-    // Initialize Groq client
-    const groq = new Groq({
-      apiKey: process.env.GROQ_API_KEY
-    });
+    const type = 'syllabus';
+    const sysPrompt = getRoadmapPrompt(content, type);
 
-    // Prepare the prompt
-    const prompt = `
-You are an expert educational content creator. Your task is to create comprehensive, well-structured notes based on the syllabus or course content provided below.
-
-COURSE INFORMATION:
-- Course Title: ${metadata.courseTitle}
-- Professor: ${metadata.professorName}
-- Institution: ${metadata.institution}
-
-ORIGINAL CONTENT:
-${content}
-
-Please generate detailed, comprehensive educational notes that:
-1. Cover all the topics mentioned in the original content
-2. Expand with detailed explanations, examples, and clarifications
-3. Use a clear, academic structure with headings and subheadings
-4. Include relevant definitions, concepts, and principles
-5. Are suitable for college-level students
-6. Are well-organized for easy studying and reference
-
-FORMAT:
-- Use Markdown for structure
-- Use # for main headings (H1)
-- Use ## for subheadings (H2)
-- Use ### for sub-subheadings (H3)
-- Use bullet points and numbered lists where appropriate
-- Bold key terms and important concepts
-
-Your response should only contain the formatted notes content, without any introductory or concluding remarks.
-`;
-
-    // Call the Groq API
-    const completion = await groq.chat.completions.create({
-      messages: [
-        { role: "user", content: prompt }
-      ],
-      model: "llama-3.3-70b-versatile",
-      // temperature: 0.3,
-    });
-
-    return completion.choices[0].message.content;
+    return await askGemini(sysPrompt);
   } catch (error) {
-    console.error('Error processing content with AI:', error);
+    console.error('Error processing content with AI (Roadmap):', error);
     throw error;
   }
 }
+
+
+export async function generateNotesForPhase(phaseStr: string) {
+  const phaseObj = JSON.parse(phaseStr) as Phase;
+  console.log(`\n📘 Generating notes for phase: ${phaseObj.title}\n`);
+
+  const systemPrompt = getNotesPrompt();
+  const subPhases = phaseObj?.subPhases;
+
+  if (subPhases && typeof subPhases === 'object') {
+    const subNotes = [];
+
+    for (const sub of Object.values(subPhases)) {
+      const userPrompt = `
+You are generating notes for a sub-topic of a phase.
+
+SubPhase Title: ${sub?.title}
+SubPhase Description: ${sub?.description}
+Generate clear and comprehensive notes for this sub-topic.
+`;
+
+      try {
+        const response = await askGemini(systemPrompt + '\n\n' + userPrompt);
+        const filteredResponseStr = response
+          .replace(/^```[a-z]*\n?/i, "")
+          .replace(/```$/, "")
+          .trim();
+
+          console.log("Title: " + sub.title + " Response: " + filteredResponseStr);
+
+        subNotes.push({
+          subPhaseTitle: sub.title,
+          notes: filteredResponseStr,
+        });
+      } catch (error) {
+        console.error(`❌ Failed to generate notes for subPhase "${sub?.title}":`, error);
+      }
+    }
+
+    return {
+      phaseTitle: phaseObj.title,
+      phaseDescription: phaseObj.description,
+      notes: subNotes,
+    };
+  }
+
+  return {
+    phaseTitle: phaseObj.title,
+    phaseDescription: phaseObj.description,
+    notes: [],
+  };
+}
+
